@@ -35,6 +35,14 @@ class OpenIdConnectService
 
     public function StartAuthentication()
     {
+        if(!$this->clientConnectSettings->getId() == null)
+        {
+            $this->GetWellKnownConfiguration();
+            $this->isConfigurationEnabled = true;
+        }else{
+            $this->isConfigurationEnabled = false;
+        }
+        
         if(!$this->userState =="Authenticated")
         {
             $this->Authenticate();
@@ -65,13 +73,7 @@ class OpenIdConnectService
         $this->redirect_to = us\utility::getQuery('redirect_to');
 
         $this->clientConnectSettings = $this->GetConnectSettings();
-        if(!$this->clientConnectSettings->getId() == null)
-        {
-            $this->GetWellKnownConfiguration();
-            $this->isConfigurationEnabled = true;
-        }else{
-            $this->isConfigurationEnabled = false;
-        }
+        
 
     }
 
@@ -297,8 +299,10 @@ class OpenIdConnectService
     {
         $url = $this->clientConnectSettings->getOpenIdServerUrl().'/.well-known/openid-configuration';
         $response = wp_remote_get($url);
-        $decoded = json_decode($response['body']);
-        $this->openIdServerConfig = $decoded;
+        if (!is_wp_error($response)) {
+            $decoded = json_decode($response['body']);
+            $this->openIdServerConfig = $decoded;
+        }
     }
 
 }
